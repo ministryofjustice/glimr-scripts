@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+require './lib/glimr'
+
+params = contact.merge(
+  jurisdictionId: FIRST_TIER_TAX_TRIBUNAL_JURISDICTION_ID,
+  onlineMappingCode: online_mapping_code,
+  documentsURL: Faker::Internet.url
+)
+
+if rand(2) == 1
+  params.merge!(representative)
+end
+
+begin
+  response = GlimrApiClient::RegisterNewCase.call(params)
+
+  puts "Request Details:".colorize(:red)
+  ap response.request_body
+  puts "Response:".colorize(:yellow)
+  ap response.response_body
+
+  case_number = response.response_body[:tribunalCaseNumber]
+  confirmation = response.response_body[:confirmationCode]
+
+  puts "Fee Liabilites:".colorize(:green)
+  new_case = GlimrApiClient::Case.find(case_number, confirmation)
+  ap new_case.response_body
+  fee_liability = new_case.response_body[:feeLiabilities][0][:feeLiabilityId]
+  payable = new_case.response_body[:feeLiabilities][0][:payableWithUnclearedInPence]
+
+  puts "\n\n*** Follow on commands:\n".colorize(color: :white, background: :red)
+
+  puts "To find and pay for this case:".colorize(:blue)
+  puts "\tbin/find_and_pay_for_case -c '#{case_number}' -z '#{confirmation}'"
+  puts "To find this case again:".colorize(:blue)
+  puts "\tbin/find_case -c '#{case_number}' -z '#{confirmation}'"
+  puts "To mark this case as paid:".colorize(:blue)
+  puts "\tbin/payment_taken -f '#{fee_liability}' -p '#{payable}'"
+  puts "To pay for this case with Help With Fees (HWF):".colorize(:blue)
+  puts "\tbin/hwf_payment_reference -f '#{fee_liability}' -p '#{payable}'"
+  puts "To pay for this case on account:".colorize(:blue)
+  puts "\tbin/pba_payment_reference -f '#{fee_liability}' -p '#{payable}' -a '<lookup account on GLiMR>' -z '<lookup under account on GLiMR>'"
+  puts "NOTE: PBA requires a confirmation code associated with the account, not the case.".colorize(:red)
+  puts "These can be found under the valid PBA account entry on GLiMR. There is no API call".colorize(:red)
+  puts "to find these at the time of writing.".colorize(:red)
+rescue Exception => e
+  ap e
+end
+
+__END__
+
+We are assuming 'DX' values will not be supplied via the data capture tool (although they may be added in GLiMR, later)
+
+repDXAddress1
+repDXAddress2
+repDXAddress3

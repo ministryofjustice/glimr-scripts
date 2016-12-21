@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require './lib/glimr'
+
+opts = Slop.parse do |o|
+  o.integer '-f', '--fid', 'fee liability ID'
+  o.integer '-p', '--paid', 'paid amount in pence'
+end
+
+params = {
+  feeLiabilityId: opts[:fid],
+  hwfRequestReference: opts[:fid].to_s + "HWF" + Time.now.strftime("%Y%m%d%H%M%S"),
+  amountToPayInPence: opts[:paid]
+}
+
+begin
+  response = GlimrApiClient::HwfRequested.call(params)
+
+  ap response.request_body
+  ap response.response_body
+rescue Exception => e
+  ap e
+end
+

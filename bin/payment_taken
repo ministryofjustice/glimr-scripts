@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+require './lib/glimr'
+
+opts = Slop.parse do |o|
+  o.integer '-f', '--fid', 'fee liability ID'
+  o.integer '-p', '--paid', 'paid amount in pence'
+end
+
+params =  {
+  feeLiabilityId: opts[:fid],
+  paymentReference: opts[:fid].to_s + "G" + Time.now.strftime("%Y%m%d%H%M%S"),
+  govpayReference: Time.now.to_i,
+  paidAmountInPence: opts[:paid]
+}
+
+begin
+  response = GlimrApiClient::Update.call(params)
+
+  ap response.request_body
+  ap response.response_body
+rescue Exception => e
+  ap e
+end
+

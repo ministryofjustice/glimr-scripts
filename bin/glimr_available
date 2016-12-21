@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require './lib/glimr'
+
+begin
+  response = GlimrApiClient::Available.call.available?
+  ap response
+rescue Exception => e
+  ap e
+end

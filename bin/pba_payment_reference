@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require './lib/glimr'
+
+opts = Slop.parse do |o|
+  o.integer '-f', '--fid', 'fee liability ID'
+  o.string '-a', '--account', 'PBA account code'
+  o.string '-z', '--confirmation', 'confirmation code'
+  o.integer '-p', '--paid', 'paid amount in pence'
+end
+
+params = {
+  feeLiabilityId: opts[:fid],
+  pbaAccountNumber: opts[:account],
+  pbaConfirmationCode: opts[:confirmation],
+  pbaTransactionReference: opts[:fid].to_s + "PBA" + Time.now.strftime("%Y%m%d%H%M%S"),
+  amountToPayInPence: opts[:paid]
+}
+
+begin
+  response = GlimrApiClient::PayByAccount.call(params)
+
+  ap response.request_body
+  ap response.response_body
+rescue Exception => e
+  ap e
+end
+

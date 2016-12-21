@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require './lib/glimr'
+
+opts = Slop.parse do |o|
+  o.string '-c', '--case', 'the case number'
+  o.string '-z', '--confirmation', 'the confirmation code'
+end
+
+begin
+  response = GlimrApiClient::Case.find(opts[:case], opts[:confirmation])
+  ap response.response_body
+rescue Exception => e
+  ap e
+end

@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require './lib/glimr'
+require 'json'
+
+opts = Slop.parse do |o|
+  o.string '-c', '--case', 'the case number'
+  o.string '-z', '--confirmation', 'the confirmation code'
+end
+
+begin
+  response = GlimrApiClient::Case.find(opts[:case], opts[:confirmation])
+
+  fee = response.fees.first
+  puts "FEE TO PAY:".colorize(:red)
+  # AwesomePrint does not work correctly with OpenStruct without monkey patching.
+  ap fee
+
+  fee_to_pay = {
+    feeLiabilityId: fee.glimr_id,
+    paymentReference: fee.glimr_id.to_s + "G" + Time.now.strftime("%Y%m%d%H%M%S"),
+    govpayReference: "1234567890ABCDEF1234567890",
+    paidAmountInPence: fee.amount
+  }
+
+  payment_response = GlimrApiClient::Update.call(fee_to_pay)
+  puts "PAYMENT RESPONSE:".colorize(:green)
+  ap payment_response.response_body
+rescue Exception => e
+  ap e
+end
