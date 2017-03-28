@@ -2,11 +2,20 @@
 
 require './lib/glimr'
 
+opts = Slop.parse do |o|
+  o.string '-f', '--firstname', 'Contact first name'
+end
+
 params = contact.merge(
   jurisdictionId: FIRST_TIER_TAX_TRIBUNAL_JURISDICTION_ID,
   onlineMappingCode: online_mapping_code,
   documentsURL: Faker::Internet.url
 )
+
+# Enable *some* data to be provided at the command line, so that
+# the security team can inject payloads during penetration
+# testing.
+params[:contactFirstName] = opts[:firstname] if opts[:firstname]
 
 if rand(2) == 1
   params.merge!(representative)
