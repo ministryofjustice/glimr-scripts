@@ -76,7 +76,6 @@ def contact
     contactStreet2: address[:street2],
     contactStreet3: address[:street3],
     contactStreet4: address[:street4],
-    contactPostalCode: address[:postcode],
     contactCity: address[:city]
   )
 end
